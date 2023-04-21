@@ -1,25 +1,45 @@
-import * as React from 'react';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import React from 'react';
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
-import TeamOverview from './pages/TeamOverview';
-import Teams from './pages/Teams';
-import UserOverview from './pages/UserOverview';
 
-const App = () => {
-    var router = createBrowserRouter([
-        {
-            path: '/',
-            element: <Teams />,
+// Pages
+import {RootPage, loader as rootLoader} from 'pages/RootPage';
+import {TeamPage, loader as teamLoader} from 'pages/TeamPage';
+import {UserPage, loader as userLoader} from 'pages/UserPage';
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            staleTime: 1000,
         },
-        {
-            path: '/team/:teamId',
-            element: <TeamOverview />,
-        },
-        {
-            path: '/user/:useId',
-            element: <UserOverview />,
-        },
-    ]);
-    return <RouterProvider router={router} />;
+    },
+});
+
+const router = createBrowserRouter([
+    {
+        path: '/',
+        element: <RootPage />,
+        loader: rootLoader(queryClient),
+        errorElement: <p>Error while loading root page!</p>,
+    },
+    {
+        path: '/teams/:teamId',
+        element: <TeamPage />,
+        loader: teamLoader(queryClient),
+        errorElement: <p>Error while loading team page!</p>,
+    },
+    {
+        path: '/users/:userId',
+        element: <UserPage />,
+        loader: userLoader(queryClient),
+        errorElement: <p>Error while loading user page!</p>,
+    },
+]);
+
+export const App = () => {
+    return (
+        <QueryClientProvider client={queryClient}>
+            <RouterProvider router={router} />
+        </QueryClientProvider>
+    );
 };
-
-export default App;
